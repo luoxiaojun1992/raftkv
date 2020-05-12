@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	hashicorpRaft "github.com/hashicorp/raft"
 	roykv "github.com/luoxiaojun1992/raftkv/kv"
 	raftkv "github.com/luoxiaojun1992/raftkv/pb"
@@ -51,12 +50,12 @@ func (kvs *KvService) Set(ctx context.Context, req *raftkv.SetRequest) (*raftkv.
 
 func (kvs *KvService) Get(ctx context.Context, req *raftkv.GetRequest) (*raftkv.GetReply, error) {
 	key := req.GetKey()
-	val, existed := kvs.Kv.Data[key]
-	if existed {
+	val, getErr := kvs.Kv.Engine.Get(key)
+	if getErr == nil {
 		return &raftkv.GetReply{
 			Value:                val,
 		}, nil
 	} else {
-		return nil, errors.New("Value of key (" + key + ") not found")
+		return nil, getErr
 	}
 }

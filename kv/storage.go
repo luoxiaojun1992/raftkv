@@ -7,11 +7,12 @@ import (
 )
 
 type KV struct {
-	Data map[string]string
+	Engine Engine
 }
 
 func NewKV() *KV {
-	return &KV{Data: make(map[string]string)}
+	engine := NewEngine()
+	return &KV{Engine: engine}
 }
 
 func (kv *KV) Apply(log *raft.Log) interface{} {
@@ -22,9 +23,7 @@ func (kv *KV) Apply(log *raft.Log) interface{} {
 		panic(jsonErr)
 	}
 
-	kv.Data[entry["key"]] = entry["val"]
-
-	return nil
+	return kv.Engine.Set(entry["key"], entry["val"])
 }
 
 // Snapshot is used to support log compaction. This call should
@@ -34,7 +33,7 @@ func (kv *KV) Apply(log *raft.Log) interface{} {
 // the FSM should be implemented in a fashion that allows for concurrent
 // updates while a snapshot is happening.
 func (kv *KV) Snapshot() (raft.FSMSnapshot, error) {
-	return NewKVSnapshot(kv.Data), nil
+	return NewKVSnapshot(kv.Engine.GetData()), nil
 }
 
 // Restore is used to restore an FSM from a snapshot. It is not called
@@ -47,9 +46,7 @@ func (kv *KV) Restore(reader io.ReadCloser) error {
 		return jsonErr
 	}
 
-	kv.Data = data
-
-	return nil
+	return kv.Engine.SetData(data)
 }
 
 type Snapshot struct {
