@@ -1,29 +1,45 @@
 package main
 
 import (
-	"fmt"
+	hashicorpRaft "github.com/hashicorp/raft"
 	roykv "github.com/luoxiaojun1992/raftkv/kv"
 	royraft "github.com/luoxiaojun1992/raftkv/raft"
+	"github.com/luoxiaojun1992/raftkv/services"
+	"google.golang.org/grpc"
+	"log"
+	"net"
 	"os"
-	"time"
+	pb "github.com/luoxiaojun1992/raftkv/pb"
 )
 
+//go:generate protoc -I ./protos --go_out=plugins=grpc:./pb ./protos/kv.proto
 func main () {
-	addr := os.Args[1]
+	raftAddr := os.Args[1]
+	grpcPort := os.Args[2]
 
 	kv := roykv.NewKV()
 
-	raftConfig := royraft.NewRaftConfig(addr)
-	raftTransport := royraft.NewRaftTransport(addr)
+	raft := startRaft(true, raftAddr, kv)
+
+	lis, err := net.Listen("tcp", grpcPort)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterKVServer(s, services.NewKvService(kv, raft))
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func startRaft(isLeader bool, raftAddr string, kv *roykv.KV) *hashicorpRaft.Raft {
+	raftConfig := royraft.NewRaftConfig(raftAddr)
+	raftTransport := royraft.NewRaftTransport(raftAddr)
 	raft := royraft.NewRaft(raftConfig, raftTransport, kv)
 
-	royraft.BootStrap(raft, raftConfig, raftTransport)
+	if isLeader {
+		royraft.BootStrap(raft, raftConfig, raftTransport)
+	}
 
-	time.Sleep(10 * time.Second)
-
-	raft.Apply([]byte("foo"), 5*time.Second)
-
-	time.Sleep(10 * time.Second)
-
-	fmt.Println(kv.Data["foo"])
+	return raft
 }

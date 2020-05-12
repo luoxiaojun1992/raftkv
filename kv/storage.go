@@ -15,7 +15,14 @@ func NewKV() *KV {
 }
 
 func (kv *KV) Apply(log *raft.Log) interface{} {
-	kv.Data[string(log.Data)] = string(log.Data)
+	var entry map[string]string
+
+	jsonErr := json.Unmarshal(log.Data, &entry)
+	if jsonErr != nil {
+		panic(jsonErr)
+	}
+
+	kv.Data[entry["key"]] = entry["val"]
 	return nil
 }
 
