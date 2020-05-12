@@ -23,7 +23,7 @@ func main ()  {
 	setCtx, setCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
 	defer setCancel()
 
-	setReply, errSet := c.Set(setCtx, &pb.SetRequest{Key: "foo", Value: "bar18"})
+	setReply, errSet := c.Set(setCtx, &pb.SetRequest{Key: "foo", Value: "bar19"})
 	if errSet != nil {
 		log.Fatalf("could not set: %v", errSet)
 	}

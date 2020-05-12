@@ -53,7 +53,7 @@ func startRaft(isLeader bool, raftAddr string, raftLeaderGrpcPort string, kv *ro
 		// Set up a connection to the server.
 		conn, err := grpc.Dial(raftLeaderGrpcPort, grpc.WithInsecure(), grpc.WithBlock())
 		if err != nil {
-			log.Fatalf("did not connect: %v", err)
+			log.Printf("could not add node, did not connect: %v", err)
 		}
 		defer conn.Close()
 		c := pb.NewRaftClient(conn)
@@ -63,11 +63,11 @@ func startRaft(isLeader bool, raftAddr string, raftLeaderGrpcPort string, kv *ro
 
 		addNodeReply, errAddNode := c.AddNode(addNodeCtx, &pb.AddNodeRequest{NodeAddr: raftAddr})
 		if errAddNode != nil {
-			log.Fatalf("could not add node: %v", errAddNode)
+			log.Printf("could not add node: %v", errAddNode)
 		}
 
 		if !addNodeReply.GetResult() {
-			log.Fatalf("could not add node: %v", errAddNode)
+			log.Printf("could not add node: %v", errAddNode)
 		}
 	}
 

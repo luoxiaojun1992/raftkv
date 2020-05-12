@@ -29,12 +29,12 @@ func NewRaftTransport(addr string) hasicorpRaft.Transport {
 }
 
 func NewRaft(raftConfig *hasicorpRaft.Config, transport hasicorpRaft.Transport, fsm hasicorpRaft.FSM, dataDir string) *hasicorpRaft.Raft {
-	logStore, logStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "raftleader-log.bolt"))
+	logStore, logStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "log.bolt"))
 	if logStoreErr != nil {
 		panic(logStoreErr)
 	}
 
-	stableStore, stableStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "raftleader-stable.bolt"))
+	stableStore, stableStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "stable.bolt"))
 	if stableStoreErr != nil {
 		panic(stableStoreErr)
 	}
