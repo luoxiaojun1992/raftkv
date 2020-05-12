@@ -23,6 +23,7 @@ func (kv *KV) Apply(log *raft.Log) interface{} {
 	}
 
 	kv.Data[entry["key"]] = entry["val"]
+
 	return nil
 }
 

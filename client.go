@@ -20,10 +20,10 @@ func main ()  {
 	defer conn.Close()
 	c := pb.NewKVClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	setCtx, setCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
+	defer setCancel()
 
-	setReply, errSet := c.Set(ctx, &pb.SetRequest{Key: "foo", Value: "bar"})
+	setReply, errSet := c.Set(setCtx, &pb.SetRequest{Key: "foo", Value: "bar18"})
 	if errSet != nil {
 		log.Fatalf("could not set: %v", errSet)
 	}
@@ -34,9 +34,12 @@ func main ()  {
 		log.Println("Failed to set")
 	}
 
-	getReply, errGet := c.Get(ctx, &pb.GetRequest{Key: "foo"})
+	getCtx, getCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
+	defer getCancel()
+
+	getReply, errGet := c.Get(getCtx, &pb.GetRequest{Key: "foo"})
 	if errGet != nil {
-		log.Fatalf("could not set: %v", errGet)
+		log.Fatalf("could not get: %v", errGet)
 	}
 
 	log.Println("Value: " + getReply.GetValue())
