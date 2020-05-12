@@ -25,8 +25,12 @@ func main () {
 	if len(os.Args) >= 6 {
 		raftLeaderGrpcPort = os.Args[5]
 	}
+	engineType := "memory"
+	if len(os.Args) >= 7 {
+		raftLeaderGrpcPort = os.Args[6]
+	}
 
-	kv := roykv.NewKV()
+	kv := roykv.NewKV(engineType)
 
 	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
 

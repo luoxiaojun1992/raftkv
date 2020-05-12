@@ -9,7 +9,13 @@ type Engine interface {
 	SetData(data map[string]string) error
 }
 
-func NewEngine() Engine {
-	data := make(map[string]string)
-	return &engines.MemoryEngine{Data: data}
+func NewEngine(engineType string) Engine {
+	switch engineType {
+	case "memory":
+		data := make(map[string]string)
+		return &engines.MemoryEngine{Data: data}
+	default:
+		data := make(map[string]string)
+		return &engines.MemoryEngine{Data: data}
+	}
 }

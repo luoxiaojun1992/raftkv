@@ -10,8 +10,8 @@ type KV struct {
 	Engine Engine
 }
 
-func NewKV() *KV {
-	engine := NewEngine()
+func NewKV(engineType string) *KV {
+	engine := NewEngine(engineType)
 	return &KV{Engine: engine}
 }
 
