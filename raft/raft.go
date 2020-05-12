@@ -28,18 +28,18 @@ func NewRaftTransport(addr string) hasicorpRaft.Transport {
 	return transport
 }
 
-func NewRaft(raftConfig *hasicorpRaft.Config, transport hasicorpRaft.Transport, fsm hasicorpRaft.FSM) *hasicorpRaft.Raft {
-	logStore, logStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/raft", "raft-log.bolt"))
+func NewRaft(raftConfig *hasicorpRaft.Config, transport hasicorpRaft.Transport, fsm hasicorpRaft.FSM, dataDir string) *hasicorpRaft.Raft {
+	logStore, logStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "raftleader-log.bolt"))
 	if logStoreErr != nil {
 		panic(logStoreErr)
 	}
 
-	stableStore, stableStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/raft", "raft-stable.bolt"))
+	stableStore, stableStoreErr := raftboltdb.NewBoltStore(filepath.Join("./data/"+dataDir, "raftleader-stable.bolt"))
 	if stableStoreErr != nil {
 		panic(stableStoreErr)
 	}
 
-	snapshotStore, snapshotStoreErr := hasicorpRaft.NewFileSnapshotStore("./data/raft/snapshot", 1, os.Stderr)
+	snapshotStore, snapshotStoreErr := hasicorpRaft.NewFileSnapshotStore("./data/"+dataDir+"/snapshot", 1, os.Stderr)
 	if snapshotStoreErr != nil {
 		panic(stableStoreErr)
 	}

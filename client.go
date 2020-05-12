@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
+	pb "github.com/luoxiaojun1992/raftkv/pb"
 	"google.golang.org/grpc"
 	"log"
 	"os"
 	"time"
-	pb "github.com/luoxiaojun1992/raftkv/pb"
 )
 
 func main ()  {

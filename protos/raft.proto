@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package raftkv;
+
+service Raft {
+  rpc AddNode (AddNodeRequest) returns (AddNodeReply) {}
+}
+
+message AddNodeRequest {
+  string nodeAddr = 1;
+}
+
+message AddNodeReply {
+  bool result = 1;
+}
