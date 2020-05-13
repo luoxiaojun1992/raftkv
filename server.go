@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	hashicorpRaft "github.com/hashicorp/raft"
 	roykv "github.com/luoxiaojun1992/raftkv/kv"
 	pb "github.com/luoxiaojun1992/raftkv/pb"
@@ -33,6 +34,41 @@ func main () {
 	kv := roykv.NewKV(engineType)
 
 	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
+
+	observationCh := make(chan hashicorpRaft.Observation)
+	observer := hashicorpRaft.NewObserver(observationCh, true, func(o *hashicorpRaft.Observation) bool {
+		_, ok := o.Data.(hashicorpRaft.LeaderObservation)
+		if ok {
+			return true
+		} else {
+			return false
+		}
+	})
+	r.RegisterObserver(observer)
+	go func() {
+		for ; true; {
+			observation := <-observationCh
+			leaderObservation := observation.Data.(hashicorpRaft.LeaderObservation)
+			if hashicorpRaft.ServerAddress(raftAddr) == leaderObservation.Leader {
+				log.Println("Observed leader:" + leaderObservation.Leader)
+				var entry map[string]string
+				entry = make(map[string]string)
+				entry["key"] = "raftLeaderGrpcPort"
+				entry["val"] = grpcPort
+
+				jsonEntry, jsonErr := json.Marshal(entry)
+				if jsonErr != nil {
+					log.Println(jsonErr)
+				} else {
+					applyResult := r.Apply(jsonEntry, 10*time.Second)
+					applyErr := applyResult.Error()
+					if applyErr != nil {
+						log.Println(applyErr)
+					}
+				}
+			}
+		}
+	}()
 
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
