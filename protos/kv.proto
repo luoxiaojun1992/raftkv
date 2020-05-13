@@ -14,6 +14,8 @@ message SetRequest {
 
 message SetReply {
   bool result = 1;
+  bool notLeader = 2;
+  string leaderGrpcPort = 3;
 }
 
 message GetRequest {
@@ -22,4 +24,6 @@ message GetRequest {
 
 message GetReply {
   string value = 1;
+  bool notLeader = 2;
+  string leaderGrpcPort = 3;
 }

@@ -12,4 +12,6 @@ message AddNodeRequest {
 
 message AddNodeReply {
   bool result = 1;
+  bool notLeader = 2;
+  string leaderGrpcPort = 3;
 }
