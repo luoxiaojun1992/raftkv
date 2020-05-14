@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	hashicorpRaft "github.com/hashicorp/raft"
 	roykv "github.com/luoxiaojun1992/raftkv/kv"
 	pb "github.com/luoxiaojun1992/raftkv/pb"
@@ -34,6 +35,25 @@ func main () {
 
 	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
 
+	//Broadcast leader grpc port
+	if r.State() == hashicorpRaft.Leader {
+		broadcastLeaderGrpcPort(r, grpcPort)
+	}
+	monitorLeaderChange(r, raftAddr, grpcPort)
+
+	lis, err := net.Listen("tcp", grpcPort)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterKVServer(s, services.NewKvService(kv, r))
+	pb.RegisterRaftServer(s, services.NewRaftService(kv, r))
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func monitorLeaderChange(r *hashicorpRaft.Raft, raftAddr string, grpcPort string) {
 	observationCh := make(chan hashicorpRaft.Observation)
 	observer := hashicorpRaft.NewObserver(observationCh, true, func(o *hashicorpRaft.Observation) bool {
 		_, ok := o.Data.(hashicorpRaft.LeaderObservation)
@@ -50,23 +70,27 @@ func main () {
 			leaderObservation := observation.Data.(hashicorpRaft.LeaderObservation)
 			if hashicorpRaft.ServerAddress(raftAddr) == leaderObservation.Leader {
 				log.Println("Observed leader:" + leaderObservation.Leader)
-				setErr := kv.Engine.Set("raftLeaderGrpcPort", grpcPort)
-				if setErr != nil {
-					log.Println(setErr)
-				}
+				broadcastLeaderGrpcPort(r, grpcPort)
 			}
 		}
 	}()
+}
 
-	lis, err := net.Listen("tcp", grpcPort)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-	s := grpc.NewServer()
-	pb.RegisterKVServer(s, services.NewKvService(kv, r))
-	pb.RegisterRaftServer(s, services.NewRaftService(kv, r))
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
+func broadcastLeaderGrpcPort(r *hashicorpRaft.Raft, grpcPort string) {
+	var entry map[string]string
+	entry = make(map[string]string)
+	entry["key"] = "raftLeaderGrpcPort"
+	entry["val"] = grpcPort
+
+	jsonEntry, jsonErr := json.Marshal(entry)
+	if jsonErr != nil {
+		log.Println(jsonErr)
+	} else {
+		applyResult := r.Apply(jsonEntry, 10*time.Second)
+		applyErr := applyResult.Error()
+		if applyErr != nil {
+			log.Println(applyErr)
+		}
 	}
 }
 
