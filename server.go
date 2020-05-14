@@ -32,6 +32,7 @@ func main () {
 	}
 
 	kv := roykv.NewKV(engineType, dataDir)
+	defer kv.Close()
 
 	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
 

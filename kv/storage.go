@@ -15,6 +15,10 @@ func NewKV(engineType string, dataDir string) *KV {
 	return &KV{Engine: engine}
 }
 
+func (kv *KV) Close() error {
+	return kv.Engine.Close()
+}
+
 func (kv *KV) Apply(log *raft.Log) interface{} {
 	var entry map[string]string
 
