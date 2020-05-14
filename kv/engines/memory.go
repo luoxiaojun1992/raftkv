@@ -6,6 +6,11 @@ type MemoryEngine struct {
 	Data map[string]string
 }
 
+func NewMemoryEngine() *MemoryEngine {
+	data := make(map[string]string)
+	return &MemoryEngine{Data: data}
+}
+
 func (m *MemoryEngine) Set(key string, value string) error {
 	m.Data[key] = value
 	return nil
@@ -26,5 +31,9 @@ func (m *MemoryEngine) GetData() map[string]string {
 
 func (m *MemoryEngine) SetData(data map[string]string) error {
 	m.Data = data
+	return nil
+}
+
+func (m *MemoryEngine) Close() error {
 	return nil
 }

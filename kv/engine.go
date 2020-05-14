@@ -1,21 +1,28 @@
 package kv
 
-import "github.com/luoxiaojun1992/raftkv/kv/engines"
+import (
+	"github.com/luoxiaojun1992/raftkv/kv/engines"
+	"log"
+)
 
 type Engine interface {
 	Set(key string, value string) error
 	Get(key string) (string, error)
 	GetData() map[string]string
 	SetData(data map[string]string) error
+	Close() error
 }
 
-func NewEngine(engineType string) Engine {
+func NewEngine(engineType string, dataDir string) Engine {
 	switch engineType {
 	case "memory":
-		data := make(map[string]string)
-		return &engines.MemoryEngine{Data: data}
+		log.Println("Memory Engine Started")
+		return engines.NewMemoryEngine()
+	case "badger":
+		log.Println("Badger Engine Started")
+		return engines.NewBadgerEngine(dataDir)
 	default:
-		data := make(map[string]string)
-		return &engines.MemoryEngine{Data: data}
+		log.Println("Memory Engine Started")
+		return engines.NewMemoryEngine()
 	}
 }
