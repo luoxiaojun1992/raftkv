@@ -50,6 +50,8 @@ func (kv *KV) Restore(reader io.ReadCloser) error {
 		return jsonErr
 	}
 
+	//todo bugfix merge data
+
 	return kv.Engine.SetData(data)
 }
 

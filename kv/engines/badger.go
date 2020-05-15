@@ -44,11 +44,18 @@ func (m *BadgerEngine) Get(key string) (string, error) {
 }
 
 func (m *BadgerEngine) GetData() map[string]string {
+	//todo
+
 	data := make(map[string]string)
 	return data
 }
 
 func (m *BadgerEngine) SetData(data map[string]string) error {
+	return nil
+}
+
+func (m *BadgerEngine) MergeData(data map[string]string) error {
+	//todo
 	return nil
 }
 
