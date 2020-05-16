@@ -6,7 +6,6 @@ import (
 	"google.golang.org/grpc"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -21,22 +20,22 @@ func main ()  {
 	defer conn.Close()
 	c := pb.NewKVClient(conn)
 
-	for i := 0; i< 10000; i++ {
-		setCtx, setCancel := context.WithTimeout(context.TODO(), 10*time.Second)
-
-		setReply, errSet := c.Set(setCtx, &pb.SetRequest{Key: "foo" + strconv.Itoa(i), Value: "bar" + strconv.Itoa(i)})
-		if errSet != nil {
-			log.Fatalf("could not set: %v", errSet)
-		}
-
-		if setReply.GetResult() {
-			log.Println("Success")
-		} else {
-			log.Println("Failed to set")
-		}
-
-		setCancel()
-	}
+	//for i := 0; i< 10000; i++ {
+	//	setCtx, setCancel := context.WithTimeout(context.TODO(), 10*time.Second)
+	//
+	//	setReply, errSet := c.Set(setCtx, &pb.SetRequest{Key: "foo" + strconv.Itoa(i), Value: "bar" + strconv.Itoa(i)})
+	//	if errSet != nil {
+	//		log.Fatalf("could not set: %v", errSet)
+	//	}
+	//
+	//	if setReply.GetResult() {
+	//		log.Println("Success")
+	//	} else {
+	//		log.Println("Failed to set")
+	//	}
+	//
+	//	setCancel()
+	//}
 
 	getCtx, getCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
 	defer getCancel()
