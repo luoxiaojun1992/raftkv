@@ -3,15 +3,16 @@ package kv
 import (
 	"encoding/json"
 	"github.com/hashicorp/raft"
+	"github.com/luoxiaojun1992/raftkv/kv/engines"
 	"io"
 )
 
 type KV struct {
-	Engine Engine
+	Engine engines.Engine
 }
 
 func NewKV(engineType string, dataDir string) *KV {
-	engine := NewEngine(engineType, dataDir)
+	engine := engines.NewEngine(engineType, dataDir)
 	return &KV{Engine: engine}
 }
 
@@ -37,46 +38,40 @@ func (kv *KV) Apply(log *raft.Log) interface{} {
 // the FSM should be implemented in a fashion that allows for concurrent
 // updates while a snapshot is happening.
 func (kv *KV) Snapshot() (raft.FSMSnapshot, error) {
-	return NewKVSnapshot(kv.Engine.GetData()), nil
+	return NewKVSnapshot(kv.Engine.Snapshot()), nil
 }
 
 // Restore is used to restore an FSM from a snapshot. It is not called
 // concurrently with any other command. The FSM must discard all previous
 // state.
 func (kv *KV) Restore(reader io.ReadCloser) error {
-	var data map[string]string
-	jsonErr := json.NewDecoder(reader).Decode(&data)
-	if jsonErr != nil {
-		return jsonErr
-	}
+	return kv.Engine.Restore(reader)
+}
 
-	//todo bugfix merge data
+type SnapshotWriter struct {
+	Sink raft.SnapshotSink
+}
 
-	return kv.Engine.SetData(data)
+func (sw SnapshotWriter) Write(p []byte) (n int, err error) {
+	return sw.Sink.Write(p)
+}
+
+func NewSnapshotWriter(sink raft.SnapshotSink) *SnapshotWriter {
+	return &SnapshotWriter{Sink: sink}
 }
 
 type Snapshot struct {
-	data map[string]string
+	EngineSnapshot engines.EngineSnapshot
 }
 
-func NewKVSnapshot(data map[string]string) *Snapshot {
-	return &Snapshot{data: data}
+func NewKVSnapshot(engineSnapshot engines.EngineSnapshot) *Snapshot {
+	return &Snapshot{EngineSnapshot: engineSnapshot}
 }
 
 // Persist should dump all necessary state to the WriteCloser 'sink',
 // and call sink.Close() when finished or call sink.Cancel() on error.
 func (kvSnapshot *Snapshot) Persist(sink raft.SnapshotSink) error {
-	jsonData, jsonErr := json.Marshal(kvSnapshot.data)
-	if jsonErr != nil {
-		return jsonErr
-	}
-
-	_, sinkErr := sink.Write(jsonData)
-	if sinkErr != nil {
-		return sinkErr
-	}
-
-	return nil
+	return kvSnapshot.EngineSnapshot.Persist(NewSnapshotWriter(sink))
 }
 
 // Release is invoked when we are finished with the snapshot.

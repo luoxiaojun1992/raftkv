@@ -66,7 +66,7 @@ func monitorLeaderChange(r *hashicorpRaft.Raft, raftAddr string, grpcPort string
 	})
 	r.RegisterObserver(observer)
 	go func() {
-		for ; true; {
+		for {
 			observation := <-observationCh
 			leaderObservation := observation.Data.(hashicorpRaft.LeaderObservation)
 			if hashicorpRaft.ServerAddress(raftAddr) == leaderObservation.Leader {

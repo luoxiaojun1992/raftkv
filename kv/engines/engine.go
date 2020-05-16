@@ -1,7 +1,7 @@
-package kv
+package engines
 
 import (
-	"github.com/luoxiaojun1992/raftkv/kv/engines"
+	"io"
 	"log"
 )
 
@@ -10,19 +10,23 @@ type Engine interface {
 	Get(key string) (string, error)
 	GetData() map[string]string
 	SetData(data map[string]string) error
+	MergeData(data map[string]string) error
+	Snapshot() EngineSnapshot
+	Restore(reader io.Reader) error
 	Close() error
 }
 
 func NewEngine(engineType string, dataDir string) Engine {
 	switch engineType {
-	case "memory":
-		log.Println("Memory Engine Started")
-		return engines.NewMemoryEngine()
 	case "badger":
 		log.Println("Badger Engine Started")
-		return engines.NewBadgerEngine(dataDir)
+		return NewBadgerEngine(dataDir)
 	default:
-		log.Println("Memory Engine Started")
-		return engines.NewMemoryEngine()
+		log.Println("Badger Engine Started")
+		return NewBadgerEngine(dataDir)
 	}
+}
+
+type EngineSnapshot interface {
+	Persist(writer io.Writer) error
 }
