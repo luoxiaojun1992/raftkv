@@ -15,8 +15,7 @@ echo 'Starting followers'
 nohup go run server.go 127.0.0.1:6666 :9999 0 raftfollower1 :8888 badger >> ./raftfollower1.log 2>&1 &
 nohup go run server.go 127.0.0.1:4444 :5555 0 raftfollower2 :8888 badger >> ./raftfollower2.log 2>&1 &
 nohup go run server.go 127.0.0.1:2222 :3333 0 raftfollower3 :8888 badger >> ./raftfollower3.log 2>&1 &
-nohup go run server.go 127.0.0.1:1111 :11111 0 raftfollower4 :8888 badger >> ./raftfollower4.log 2>&1 &
-nohup go run server.go 127.0.0.1:22222 :33333 0 raftfollower5 :8888 badger >> ./raftfollower5.log 2>&1 &
+nohup go run server.go 127.0.0.1:1111 :7777 0 raftfollower4 :8888 badger >> ./raftfollower4.log 2>&1 &
 echo 'Waiting for followers starting'
 sleep 3
 echo 'Followers started'
