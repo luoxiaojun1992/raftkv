@@ -26,7 +26,7 @@ func main () {
 	if len(os.Args) >= 6 {
 		raftLeaderGrpcPort = os.Args[5]
 	}
-	engineType := "memory"
+	engineType := "badger"
 	if len(os.Args) >= 7 {
 		engineType = os.Args[6]
 	}
