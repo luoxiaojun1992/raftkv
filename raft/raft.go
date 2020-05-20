@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func NewRaftConfig (addr string) *hasicorpRaft.Config {
+func NewRaftConfig(addr string) *hasicorpRaft.Config {
 	raftConfig := hasicorpRaft.DefaultConfig()
 	raftConfig.LocalID = hasicorpRaft.ServerID(addr)
 	return raftConfig
@@ -29,7 +29,7 @@ func NewRaftTransport(addr string) hasicorpRaft.Transport {
 }
 
 func NewRaft(raftConfig *hasicorpRaft.Config, transport hasicorpRaft.Transport, fsm hasicorpRaft.FSM, dataDir string) *hasicorpRaft.Raft {
-	dataPath := "./data/"+dataDir
+	dataPath := "./data/" + dataDir
 	_, statErr := os.Stat(dataPath)
 	if statErr != nil {
 		if os.IsNotExist(statErr) {

@@ -10,7 +10,7 @@ import (
 )
 
 type RaftService struct {
-	Kv *roykv.KV
+	Kv   *roykv.KV
 	Raft *hashicorpRaft.Raft
 }
 
@@ -19,21 +19,21 @@ func (rs *RaftService) AddNode(ctx context.Context, req *raftkv.AddNodeRequest) 
 		leaderGrpcPort, grpcPortErr := rs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
 			return &raftkv.AddNodeReply{
-				Result: false,
-				NotLeader: true,
+				Result:         false,
+				NotLeader:      true,
 				LeaderGrpcPort: "",
 			}, grpcPortErr
 		}
 
 		return &raftkv.AddNodeReply{
-			Result: false,
-			NotLeader: true,
+			Result:         false,
+			NotLeader:      true,
 			LeaderGrpcPort: leaderGrpcPort,
 		}, errors.New("NotLeader:" + string(rs.Raft.Leader()))
 	}
 
 	nodeAddr := req.GetNodeAddr()
-	addRes := rs.Raft.AddVoter(hashicorpRaft.ServerID(nodeAddr), hashicorpRaft.ServerAddress(nodeAddr), 0, 10 * time.Second)
+	addRes := rs.Raft.AddVoter(hashicorpRaft.ServerID(nodeAddr), hashicorpRaft.ServerAddress(nodeAddr), 0, 10*time.Second)
 	addErr := addRes.Error()
 	if addErr != nil {
 		return &raftkv.AddNodeReply{Result: false, NotLeader: false, LeaderGrpcPort: ""}, addErr

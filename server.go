@@ -17,7 +17,7 @@ import (
 
 //go:generate protoc -I ./protos --go_out=plugins=grpc:./pb ./protos/kv.proto
 //go:generate protoc -I ./protos --go_out=plugins=grpc:./pb ./protos/raft.proto
-func main () {
+func main() {
 	raftAddr := os.Args[1]
 	grpcPort := os.Args[2]
 	isLeader := os.Args[3]
@@ -31,9 +31,11 @@ func main () {
 		engineType = os.Args[6]
 	}
 
+	//FSM
 	kv := roykv.NewKV(engineType, dataDir)
 	defer kv.Close()
 
+	//Raft Cluster
 	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
 
 	//Broadcast leader grpc port
@@ -42,6 +44,7 @@ func main () {
 	}
 	monitorLeaderChange(r, raftAddr, grpcPort)
 
+	//GRPC Server
 	lis, err := net.Listen("tcp", grpcPort)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
@@ -136,7 +139,7 @@ func registerFollower(raftLeaderGrpcPort string, raftAddr string) (*pb.AddNodeRe
 	defer conn.Close()
 	c := pb.NewRaftClient(conn)
 
-	addNodeCtx, addNodeCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
+	addNodeCtx, addNodeCancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer addNodeCancel()
 
 	addNodeReply, errAddNode := c.AddNode(addNodeCtx, &pb.AddNodeRequest{NodeAddr: raftAddr})

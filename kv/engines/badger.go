@@ -28,7 +28,7 @@ func NewBadgerEngine(dataDir string) *BadgerEngine {
 		panic(dbOpenErr)
 	}
 
-	return &BadgerEngine{DB:db}
+	return &BadgerEngine{DB: db}
 }
 
 func (b *BadgerEngine) Set(key string, value string) error {

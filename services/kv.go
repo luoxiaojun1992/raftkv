@@ -11,7 +11,7 @@ import (
 )
 
 type KvService struct {
-	Kv *roykv.KV
+	Kv   *roykv.KV
 	Raft *hashicorpRaft.Raft
 }
 
@@ -24,15 +24,15 @@ func (kvs *KvService) Set(ctx context.Context, req *raftkv.SetRequest) (*raftkv.
 		leaderGrpcPort, grpcPortErr := kvs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
 			return &raftkv.SetReply{
-				Result: false,
-				NotLeader: true,
+				Result:         false,
+				NotLeader:      true,
 				LeaderGrpcPort: "",
 			}, grpcPortErr
 		}
 
 		return &raftkv.SetReply{
-			Result: false,
-			NotLeader: true,
+			Result:         false,
+			NotLeader:      true,
 			LeaderGrpcPort: leaderGrpcPort,
 		}, errors.New("NotLeader:" + string(kvs.Raft.Leader()))
 	}
@@ -48,9 +48,9 @@ func (kvs *KvService) Set(ctx context.Context, req *raftkv.SetRequest) (*raftkv.
 	jsonEntry, jsonErr := json.Marshal(entry)
 	if jsonErr != nil {
 		return &raftkv.SetReply{
-			Result:               false,
-			NotLeader:            false,
-			LeaderGrpcPort:       "",
+			Result:         false,
+			NotLeader:      false,
+			LeaderGrpcPort: "",
 		}, jsonErr
 	}
 
@@ -59,16 +59,16 @@ func (kvs *KvService) Set(ctx context.Context, req *raftkv.SetRequest) (*raftkv.
 	applyErr := applyResult.Error()
 	if applyErr != nil {
 		return &raftkv.SetReply{
-			Result:               false,
-			NotLeader:            false,
-			LeaderGrpcPort:       "",
+			Result:         false,
+			NotLeader:      false,
+			LeaderGrpcPort: "",
 		}, applyErr
 	}
 
 	return &raftkv.SetReply{
-		Result:               true,
-		NotLeader:            false,
-		LeaderGrpcPort:       "",
+		Result:         true,
+		NotLeader:      false,
+		LeaderGrpcPort: "",
 	}, nil
 }
 
@@ -77,15 +77,15 @@ func (kvs *KvService) Get(ctx context.Context, req *raftkv.GetRequest) (*raftkv.
 		leaderGrpcPort, grpcPortErr := kvs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
 			return &raftkv.GetReply{
-				Value: "",
-				NotLeader: true,
+				Value:          "",
+				NotLeader:      true,
 				LeaderGrpcPort: "",
 			}, grpcPortErr
 		}
 
 		return &raftkv.GetReply{
-			Value: "",
-			NotLeader: true,
+			Value:          "",
+			NotLeader:      true,
 			LeaderGrpcPort: leaderGrpcPort,
 		}, errors.New("NotLeader:" + string(kvs.Raft.Leader()))
 	}
@@ -94,15 +94,15 @@ func (kvs *KvService) Get(ctx context.Context, req *raftkv.GetRequest) (*raftkv.
 	val, getErr := kvs.Kv.Engine.Get(key)
 	if getErr == nil {
 		return &raftkv.GetReply{
-			Value:                val,
-			NotLeader:            false,
-			LeaderGrpcPort:       "",
+			Value:          val,
+			NotLeader:      false,
+			LeaderGrpcPort: "",
 		}, nil
 	} else {
 		return &raftkv.GetReply{
-			Value:                "",
-			NotLeader:            false,
-			LeaderGrpcPort:       "",
+			Value:          "",
+			NotLeader:      false,
+			LeaderGrpcPort: "",
 		}, getErr
 	}
 }

@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func main ()  {
+func main() {
 	grpcPort := os.Args[1]
 
 	// Set up a connection to the server.
@@ -37,7 +37,7 @@ func main ()  {
 	//	setCancel()
 	//}
 
-	getCtx, getCancel := context.WithTimeout(context.TODO(), 10 * time.Second)
+	getCtx, getCancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer getCancel()
 
 	getReply, errGet := c.Get(getCtx, &pb.GetRequest{Key: "raftLeaderGrpcPort"})
