@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/gookit/config"
+	"github.com/gookit/config/yaml"
 	hashicorpRaft "github.com/hashicorp/raft"
 	roykv "github.com/luoxiaojun1992/raftkv/kv"
 	pb "github.com/luoxiaojun1992/raftkv/pb"
@@ -31,6 +33,12 @@ func main() {
 		engineType = os.Args[6]
 	}
 
+	//Load Config
+	if len(os.Args) >= 8 {
+		configPath := os.Args[7]
+		loadConfig(configPath)
+	}
+
 	//FSM
 	kv := roykv.NewKV(engineType, dataDir)
 	defer kv.Close()
@@ -54,6 +62,15 @@ func main() {
 	pb.RegisterRaftServer(s, services.NewRaftService(kv, r))
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
+	}
+}
+
+func loadConfig(configPath string) {
+	config.WithOptions(config.ParseEnv)
+	config.AddDriver(yaml.Driver)
+	ldCfgErr := config.LoadFiles(configPath)
+	if ldCfgErr != nil {
+		panic(ldCfgErr)
 	}
 }
 

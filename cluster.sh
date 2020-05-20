@@ -5,7 +5,7 @@ cmd=$1
 if [ $cmd = 'start' ]; then
 # Start Leader
 echo 'Starting leader'
-nohup go run server.go 127.0.0.1:7777 :8888 1 raftleader :8888 badger >> ./raftleader.log 2>&1 &
+nohup go run server.go 127.0.0.1:7777 :8888 1 raftleader :8888 badger ./conf/common.yaml >> ./raftleader.log 2>&1 &
 echo 'Waiting for leader starting'
 sleep 3
 echo 'Leader started'
