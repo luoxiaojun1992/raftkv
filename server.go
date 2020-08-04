@@ -44,7 +44,7 @@ func main() {
 	defer kv.Close()
 
 	//Raft Cluster
-	r := startRaft(isLeader == "1", raftAddr, raftLeaderGrpcPort, kv, dataDir)
+	r := startRaft(isLeader == "1", raftAddr, grpcPort, raftLeaderGrpcPort, kv, dataDir)
 
 	//Broadcast leader grpc port
 	if r.State() == hashicorpRaft.Leader {
@@ -115,7 +115,7 @@ func broadcastLeaderGrpcPort(r *hashicorpRaft.Raft, grpcPort string) {
 	}
 }
 
-func startRaft(isLeader bool, raftAddr string, raftLeaderGrpcPort string, kv *roykv.KV, dataDir string) *hashicorpRaft.Raft {
+func startRaft(isLeader bool, raftAddr string, grpcPort string, raftLeaderGrpcPort string, kv *roykv.KV, dataDir string) *hashicorpRaft.Raft {
 	raftConfig := royraft.NewRaftConfig(raftAddr)
 	raftTransport := royraft.NewRaftTransport(raftAddr)
 	raft := royraft.NewRaft(raftConfig, raftTransport, kv, dataDir)
@@ -127,6 +127,13 @@ func startRaft(isLeader bool, raftAddr string, raftLeaderGrpcPort string, kv *ro
 
 		if errAddNode != nil {
 			if addNodeReply != nil && addNodeReply.GetNotLeader() {
+				correctLeaderGrpcPort := addNodeReply.GetLeaderGrpcPort()
+
+				if correctLeaderGrpcPort == grpcPort {
+					log.Println("could not add node twice: current node is leader")
+					return raft
+				}
+
 				addNodeReply2, errAddNode2 := registerFollower(addNodeReply.GetLeaderGrpcPort(), raftAddr)
 				if errAddNode2 != nil {
 					log.Printf("could not add node twice: %v", errAddNode)
