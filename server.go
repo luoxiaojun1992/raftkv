@@ -134,7 +134,7 @@ func startRaft(isLeader bool, raftAddr string, grpcPort string, raftLeaderGrpcPo
 					return raft
 				}
 
-				addNodeReply2, errAddNode2 := registerFollower(addNodeReply.GetLeaderGrpcPort(), raftAddr)
+				addNodeReply2, errAddNode2 := registerFollower(correctLeaderGrpcPort, raftAddr)
 				if errAddNode2 != nil {
 					log.Printf("could not add node twice: %v", errAddNode)
 				} else {
