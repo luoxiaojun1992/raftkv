@@ -58,8 +58,8 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterKVServer(s, services.NewKvService(kv, r))
-	pb.RegisterRaftServer(s, services.NewRaftService(kv, r))
+	pb.RegisterKVServer(s, services.NewKvService(kv, r, grpcPort, raftLeaderGrpcPort))
+	pb.RegisterRaftServer(s, services.NewRaftService(kv, r, grpcPort, raftLeaderGrpcPort))
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

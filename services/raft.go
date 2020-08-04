@@ -12,12 +12,22 @@ import (
 type RaftService struct {
 	Kv   *roykv.KV
 	Raft *hashicorpRaft.Raft
+	GrpcPort string
+	LeaderGrpcPort string
 }
 
 func (rs *RaftService) AddNode(ctx context.Context, req *raftkv.AddNodeRequest) (*raftkv.AddNodeReply, error) {
 	if rs.Raft.State() != hashicorpRaft.Leader {
 		leaderGrpcPort, grpcPortErr := rs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
+			if len(rs.LeaderGrpcPort) > 0 {
+				return &raftkv.AddNodeReply{
+					Result:         false,
+					NotLeader:      true,
+					LeaderGrpcPort: rs.LeaderGrpcPort,
+				}, errors.New("NotLeader:" + string(rs.Raft.Leader()))
+			}
+
 			return &raftkv.AddNodeReply{
 				Result:         false,
 				NotLeader:      true,
@@ -42,6 +52,6 @@ func (rs *RaftService) AddNode(ctx context.Context, req *raftkv.AddNodeRequest) 
 	return &raftkv.AddNodeReply{Result: true, NotLeader: false, LeaderGrpcPort: ""}, nil
 }
 
-func NewRaftService(kv *roykv.KV, raft *hashicorpRaft.Raft) *RaftService {
-	return &RaftService{Kv: kv, Raft: raft}
+func NewRaftService(kv *roykv.KV, raft *hashicorpRaft.Raft, grpcPort, leaderGrpcPort string) *RaftService {
+	return &RaftService{Kv: kv, Raft: raft, GrpcPort: grpcPort, LeaderGrpcPort: leaderGrpcPort}
 }

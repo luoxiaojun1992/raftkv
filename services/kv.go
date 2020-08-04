@@ -13,16 +13,26 @@ import (
 type KvService struct {
 	Kv   *roykv.KV
 	Raft *hashicorpRaft.Raft
+	GrpcPort string
+	LeaderGrpcPort string
 }
 
-func NewKvService(kv *roykv.KV, raft *hashicorpRaft.Raft) *KvService {
-	return &KvService{Kv: kv, Raft: raft}
+func NewKvService(kv *roykv.KV, raft *hashicorpRaft.Raft, grpcPort, leaderGrpcPort string) *KvService {
+	return &KvService{Kv: kv, Raft: raft, GrpcPort: grpcPort, LeaderGrpcPort: leaderGrpcPort}
 }
 
 func (kvs *KvService) Set(ctx context.Context, req *raftkv.SetRequest) (*raftkv.SetReply, error) {
 	if kvs.Raft.State() != hashicorpRaft.Leader {
 		leaderGrpcPort, grpcPortErr := kvs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
+			if len(kvs.LeaderGrpcPort) > 0 {
+				return &raftkv.SetReply{
+					Result:         false,
+					NotLeader:      true,
+					LeaderGrpcPort: kvs.LeaderGrpcPort,
+				}, errors.New("NotLeader:" + string(kvs.Raft.Leader()))
+			}
+
 			return &raftkv.SetReply{
 				Result:         false,
 				NotLeader:      true,
@@ -76,6 +86,14 @@ func (kvs *KvService) Get(ctx context.Context, req *raftkv.GetRequest) (*raftkv.
 	if kvs.Raft.State() != hashicorpRaft.Leader {
 		leaderGrpcPort, grpcPortErr := kvs.Kv.Engine.Get("raftLeaderGrpcPort")
 		if grpcPortErr != nil {
+			if len(kvs.LeaderGrpcPort) > 0 {
+				return &raftkv.GetReply{
+					Value:         "",
+					NotLeader:      true,
+					LeaderGrpcPort: kvs.LeaderGrpcPort,
+				}, errors.New("NotLeader:" + string(kvs.Raft.Leader()))
+			}
+
 			return &raftkv.GetReply{
 				Value:          "",
 				NotLeader:      true,
